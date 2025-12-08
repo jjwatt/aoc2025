@@ -1,4 +1,4 @@
-"""Advent of Code 2025 Day 6."""
+"""Advent of Code 2025 Day 6 part 2."""
 import operator
 from functools import reduce
 
@@ -13,35 +13,49 @@ def get_input(filepath):
 
 def get_columns(lines):
     """Split lines by whitespace and transpose rows to columns."""
-    rows = [line.split() for line in lines]
-    return list(zip(*rows))
+    # Get max width of all lines.
+    max_width = max(len(line) for line in lines)
+    # Pad with spaces.
+    grid = [line.ljust(max_width) for line in lines]
+    return list(zip(*grid))
 
 
 def calculate_columns(cols):
-    """Calculate the result of each column."""
-    results = []
-    for col in cols:
-        op = col[-1]
-        if op not in ('+', '*'):
-            print(f"Skipping malformed column. No operator found: {col}")
+    """Calculate the result of each column, scan right to left."""
+    total = 0
+    cur_nums = []
+    cur_op = None
+    for col in reversed(cols):
+        if all(c == ' ' for c in col):
+            if cur_nums and cur_op:
+                match cur_op:
+                    case '+':
+                        total += reduce(operator.add, cur_nums)
+                    case '*':
+                        total += reduce(operator.mul, cur_nums)
+                    case _:
+                        raise ValueError(f"Invalid operator: {cur_op}")
+            cur_nums = []
+            cur_op = None
             continue
-        try:
-            col_nums = [int(i) for i in col[:-1]]
-        except ValueError as ve:
-            print(f"Error parsing column: {col=}")
-            raise ve
-        match op:
+
+        digits = "".join(col[:-1]).strip()
+        if digits:
+            cur_nums.append(int(digits))
+
+        bottom_char = col[-1]
+        if bottom_char in ('+', '*'):
+            cur_op = bottom_char
+
+    if cur_nums and cur_op:
+        match cur_op:
             case '+':
-                results.append(
-                    reduce(operator.add, col_nums)
-                )
+                total += reduce(operator.add, cur_nums)
             case '*':
-                results.append(
-                    reduce(operator.mul, col_nums)
-                )
+                total += reduce(operator.mul, cur_nums)
             case _:
-                raise ValueError("Invalid column: Didn't end with op.")
-    return results
+                raise ValueError(f"Invalid operator: {cur_op}")
+    return total
 
 
 def main():
@@ -51,7 +65,6 @@ def main():
     cols = get_columns(lines)
     results = calculate_columns(cols)
     print(f"{results=}")
-    print(f"{sum(results)=}")
 
 
 if __name__ == "__main__":
