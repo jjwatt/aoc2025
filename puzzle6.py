@@ -11,26 +11,10 @@ def get_input(filepath):
     return lines
 
 
-def make_grid(lines):
-    """Pad lines with spaces to make an even grid."""
-    max_width = max(len(line) for line in lines)
-    grid = [line.ljust(max_width) for line in lines]
-    return grid
-
-
-def gen_column_values(grid):
-    """Get the grid's columns."""
-    height = len(grid)
-    width = len(grid[0])
-    step = 4
-    for x in range(0, width, step):
-        cur_col_values = []
-        for y in range(height):
-            chunk = grid[y][x: x + step]
-            val = chunk.strip()
-            if val:
-                cur_col_values.append(val)
-        yield cur_col_values
+def get_columns(lines):
+    """Split lines by whitespace and transpose rows to columns."""
+    rows = [line.split() for line in lines]
+    return list(zip(*rows))
 
 
 def calculate_columns(cols):
@@ -38,15 +22,20 @@ def calculate_columns(cols):
     results = []
     for col in cols:
         op = col[-1]
-        col_nums = [int(i) for i in col[:-1]]
+        if op not in ('+', '*'):
+            print(f"Skipping malformed column. No operator found: {col}")
+            continue
+        try:
+            col_nums = [int(i) for i in col[:-1]]
+        except ValueError as ve:
+            print(f"Error parsing column: {col=}")
+            raise ve
         match op:
             case '+':
-                # add
                 results.append(
                     reduce(operator.add, col_nums)
                 )
             case '*':
-                # multiply
                 results.append(
                     reduce(operator.mul, col_nums)
                 )
@@ -57,9 +46,9 @@ def calculate_columns(cols):
 
 def main():
     """Run the main body of the script."""
-    lines = get_input("p6-sample-input.txt")
-    grid = make_grid(lines)
-    cols = list(gen_column_values(grid))
+    # lines = get_input("p6-sample-input.txt")
+    lines = get_input("p6-full-input.txt")
+    cols = get_columns(lines)
     results = calculate_columns(cols)
     print(f"{results=}")
     print(f"{sum(results)=}")
