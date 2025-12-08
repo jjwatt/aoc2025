@@ -1,4 +1,6 @@
 """Advent of Code 2025 Day 6."""
+import operator
+from functools import reduce
 
 
 def get_input(filepath):
@@ -33,27 +35,34 @@ def gen_column_values(grid):
 
 def calculate_columns(cols):
     """Calculate the result of each column."""
+    results = []
     for col in cols:
         op = col[-1]
+        col_nums = [int(i) for i in col[:-1]]
         match op:
             case '+':
                 # add
-                pass
+                results.append(
+                    reduce(operator.add, col_nums)
+                )
             case '*':
                 # multiply
-                pass
+                results.append(
+                    reduce(operator.mul, col_nums)
+                )
             case _:
                 raise ValueError("Invalid column: Didn't end with op.")
+    return results
 
 
 def main():
     """Run the main body of the script."""
     lines = get_input("p6-sample-input.txt")
-    print(f"{lines=}")
     grid = make_grid(lines)
-    print(f"{grid=}")
     cols = list(gen_column_values(grid))
-    print(f"{cols=}")
+    results = calculate_columns(cols)
+    print(f"{results=}")
+    print(f"{sum(results)=}")
 
 
 if __name__ == "__main__":
