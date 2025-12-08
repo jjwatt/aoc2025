@@ -34,6 +34,22 @@ def is_fresh(ingredient, ranges):
     return False
 
 
+def merge_ranges(ranges):
+    """Merge ranges like (12, 18), (16, 20)."""
+    merged_ranges = []
+    sorted_ranges = sorted(ranges)
+    if sorted_ranges:
+        cur_start, cur_end = sorted_ranges[0]
+        for next_start, next_end in sorted_ranges[1:]:
+            if next_start <= cur_end:
+                cur_end = max(cur_end, next_end)
+            else:
+                merged_ranges.append((cur_start, cur_end))
+                cur_start, cur_end = next_start, next_end
+        merged_ranges.append((cur_start, cur_end))
+    return merged_ranges
+
+
 def main():
     """Run the main body of the script."""
     ranges = list(gen_range_values(gen_str_ranges("p5-full-input.txt")))
@@ -41,7 +57,14 @@ def main():
     for i in gen_ingredients("p5-full-input.txt"):
         if is_fresh(i, ranges):
             count_fresh += 1
-    print(f"{count_fresh=}")
+    print("Part 1:")
+    print(f"\t{count_fresh=}")
+    print("Part 2:")
+    merged_ranges = merge_ranges(ranges)
+    total_fresh = 0
+    for start, end in merged_ranges:
+        total_fresh += (end - start + 1)
+    print(f"\t{total_fresh=}")
 
 
 if __name__ == "__main__":
