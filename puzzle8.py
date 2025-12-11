@@ -10,6 +10,7 @@ class UnionFind:
         """Initialize a UnionFind."""
         self.parent = list(range(total_nodes))
         self.size = [1] * total_nodes
+        self.num_components = total_nodes
 
     def find(self, node_id):
         """Find the root representative of node with Path Compression."""
@@ -35,6 +36,7 @@ class UnionFind:
             self.parent[root_b] = root_a
             # Add the size of the absorbed circuit to the new root.
             self.size[root_a] += self.size[root_b]
+            self.num_components -= 1
             return True
         return False
 
@@ -71,9 +73,8 @@ def gen_distances(combinations):
 def main():
     """Run the main body of the script."""
     input_file = "p8-full-input.txt"
-    lines = list(gen_input(input_file))
     print("Part 1:")
-    nodes = list(gen_nodes(lines))
+    nodes = list(gen_nodes(gen_input(input_file)))
     sorted_edges = sorted(gen_distances(gen_combinations(nodes)))
     uf = UnionFind(len(nodes))
     if input_file == "p8-sample-input.txt":
@@ -96,7 +97,17 @@ def main():
         print(f"\tAnswer: {result}")
     else:
         print("Not enough circuits formed!")
-
+    print("Part 2:")
+    uf = UnionFind(len(nodes))
+    for _, u, v in sorted_edges:
+        if uf.union(u, v):
+            if uf.num_components == 1:
+                print(f"\tGraph fully connected by connecting {u} and {v}")
+                x1 = nodes[u][0]
+                x2 = nodes[v][0]
+                print(f"\tAnser: {x1 * x2}")
+                break
+    
 
 if __name__ == "__main__":
     main()
