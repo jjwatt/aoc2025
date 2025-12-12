@@ -32,8 +32,8 @@ def get_areas(coords):
 
 def is_center_inside(min_x, max_x, min_y, max_y, edges):
     """Return true if the center of the rectangle is inside the polygon."""
-    cx = (min_x, max_x) / 2
-    cy = (min_y, max_y) / 2
+    cx = (min_x + max_x) / 2
+    cy = (min_y + max_y) / 2
     crossings = 0
     for (x1, y1), (x2, y2) in edges:
         # We only care about vertical edges for a horizontal ray cast.
@@ -51,9 +51,28 @@ def is_center_inside(min_x, max_x, min_y, max_y, edges):
     return crossings % 2 == 1
 
 
-def hits_any_wall():
-    """Return true if the points hit any of the walls/edges."""
-    pass
+def hits_any_wall(min_x, max_x, min_y, max_y, edges):
+    """Return true if the edge intersects the interior of the rectangle."""
+    for (px1, py1), (px2, py2) in edges:
+        # Vertical wall. X is constant.
+        if px1 == px2:
+            wall_x = px1
+            wall_y_min, wall_y_max = min(py1, py2), max(py1, py2)
+            # Check if wall X is strictly inside rectangle's width.
+            if min_x < wall_x < max_x:
+                # Check if wall's Y range overlaps rectangle's Y range.
+                if max(wall_y_min, min_y) < min(wall_y_max, max_y):
+                    return True
+        # Horizontal wall. Y is constant.
+        elif py1 == py2:
+            wall_y = py1
+            wall_x_min, wall_x_max = min(px1, px2), max(px1, px2)
+            # Check if wall Y is strictly inside rectangle's height.
+            if min_y < wall_y < max_y:
+                # Check if wall's X range overlaps rectangle's X range.
+                if max(wall_x_min, min_x) < min(wall_x_max, max_x):
+                    return True
+    return False
 
 
 def get_areas2(coords):
@@ -69,6 +88,7 @@ def get_areas2(coords):
                 width = (max_x - min_x) + 1
                 height = (max_y - min_y) + 1
                 areas.append(width * height)
+    return areas
 
 
 def build_edges(coords):
@@ -90,7 +110,12 @@ def main():
     coords = parse_lines(lines)
     areas = get_areas(coords)
     print("Part 1:")
-    print(f"\t{sorted(areas, reverse=True)[0]=}")
+    largest_rect = sorted(areas, reverse=True)[0]
+    print(f"\t{largest_rect=}")
+    print("Part 2:")
+    areas = get_areas2(coords)
+    largest_rect = sorted(areas, reverse=True)[0]
+    print(f"\t{largest_rect=}")
 
 
 if __name__ == "__main__":
