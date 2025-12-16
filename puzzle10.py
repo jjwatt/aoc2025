@@ -42,14 +42,39 @@ def gen_bitmasks(parsed_data):
 
 def gen_solutions(machines):
     """Generate the shortest path from 0 (all off) to target using BFS."""
-
+    for idx, (target, buttons) in enumerate(machines):
+        queue = deque([(0, 0)])
+        visited = {0}
+        solved = False
+        while queue:
+            current_state, presses = queue.popleft()
+            if current_state == target:
+                # print(f"Machine {idx+1}: Solved in {presses}")
+                yield presses
+                solved = True
+                break
+            for button_mask in buttons:
+                new_state = current_state ^ button_mask
+                if new_state not in visited:
+                    visited.add(new_state)
+                    queue.append((new_state, presses + 1))
+        if not solved:
+            print(f"Machine {idx+1}: Impossilbe!")
+            yield 0
 
 def main():
-    filename = "p10-sample-input.txt"
-    parsed_strings = list(gen_parsed_strings(gen_input(filename)))
-    print(f"{parsed_strings=}")
-    machines = gen_bitmasks(parsed_strings)
-    print(f"{list(machines)=}")
+    # filename = "p10-sample-input.txt"
+    filename = "p10-full-input.txt"
+    solutions = gen_solutions(
+        gen_bitmasks(
+            gen_parsed_strings(
+                gen_input(filename)
+            )
+        )
+    )
+    total_presses = sum(solutions)
+    print(f"Part1:")
+    print(f"\tTotal: {total_presses}")
 
 
 if __name__ == "__main__":
