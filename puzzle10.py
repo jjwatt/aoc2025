@@ -3,7 +3,7 @@ import re
 from collections import deque
 
 
-from z3 import Optimize, Int, Sum, sat
+import z3
 
 
 def gen_input(filepath):
@@ -28,8 +28,8 @@ def gen_parsed_strings(lines):
 def gen_parsed_joltage_strings(lines):
     """Generate extracted joltage strings and buttons.
 
-      Extract joltages and buttons.
-      e.g., ("3,5,4,7", ["0,3", "1,2"]).
+    Extract joltages and buttons.
+    e.g., ("3,5,4,7", ["0,3", "1,2"]).
     """
     for line in lines:
         joltage_str = re.search(r'\{(.*?)\}', line).group(1)
@@ -100,9 +100,9 @@ def gen_vectors(parsed_strings):
 def gen_z3_solutions(machines):
     """Use Z3 solver to yield the answer for each machine."""
     for idx, (target, buttons) in enumerate(machines):
-        opt = Optimize()
+        opt = z3.Optimize()
         # "b_0", "b_1", etc. represent press counts.
-        press_counts = [Int(f'b_{k}') for k in range(len(buttons))]
+        press_counts = [z3.Int(f'b_{k}') for k in range(len(buttons))]
 
         for x in press_counts:
             opt.add(x >= 0)
@@ -110,7 +110,7 @@ def gen_z3_solutions(machines):
         num_dims = len(target)
         for dim in range(num_dims):
             # Sum of (button_contribution * press_count) == target_value
-            dim_sum = Sum([
+            dim_sum = z3.Sum([
                 buttons[k][dim] * press_counts[k]
                 for k in range(len(buttons))
             ])
@@ -118,9 +118,9 @@ def gen_z3_solutions(machines):
             opt.add(dim_sum == target[dim])
 
         # Minimize total presses.
-        opt.minimize(Sum(press_counts))
+        opt.minimize(z3.Sum(press_counts))
 
-        if opt.check() == sat:
+        if opt.check() == z3.sat:
             model = opt.model()
             # Extract result as a standard Python int.
             result = sum(model[x].as_long() for x in press_counts)
@@ -131,9 +131,10 @@ def gen_z3_solutions(machines):
 
 
 def main():
+    """Run the main body of the script."""
     # filename = "p10-sample-input.txt"
     filename = "p10-full-input.txt"
-    print(f"Part 1:")
+    print("Part 1:")
     solutions = gen_target_solutions(
         gen_bitmasks(
             gen_parsed_strings(
@@ -153,6 +154,7 @@ def main():
     )
     total_joltage_presses = sum(joltage_solutions)
     print(f"\tTotal: {total_joltage_presses}")
+
 
 if __name__ == "__main__":
     main()
