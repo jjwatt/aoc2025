@@ -33,16 +33,25 @@ def count_paths(graph, start_node, end_node):
 
 
 def main():
-    filepath = "p11-sample-input.txt"
-    # filepath = "p11-full-input.txt"
+    # filepath = "p11-sample-input.txt"
+    filepath = "p11-full-input.txt"
     graph = parse_graph(gen_lines(filepath))
     print("Part 1:")
     total_paths = count_paths(graph, "you", "out")
     print(f"\tTotal Paths: {total_paths}")
-    filepath = "p11-sample-input2.txt"
     graph = parse_graph(gen_lines(filepath))
     print("Part 2:")
-    total_paths = count_paths(graph, "svr", "out")
+    svr_dac = count_paths(graph, "svr", "dac")
+    dac_fft = count_paths(graph, "dac", "fft")
+    fft_out = count_paths(graph, "fft", "out")
+    scenario1 = svr_dac * dac_fft * fft_out
+    svr_fft = count_paths(graph, "svr", "fft")
+    fft_dac = count_paths(graph, "fft", "dac")
+    dac_out = count_paths(graph, "dac", "out")
+    scenario2 = svr_fft * fft_dac * dac_out
+    print(f"\tScenario 1: {scenario1=}")
+    print(f"\tScenario 2: {scenario2=}")
+    total_paths = scenario1 + scenario2
     print(f"\tTotal Paths: {total_paths}")
 
 
